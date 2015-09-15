@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 
 var db = require('./app/config');
@@ -21,11 +22,41 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(session({ secret: 'littleWhiteLie'}));
 
+var sess;
 
 app.get('/', 
 function(req, res) {
-  res.render('index');
+  // use conditional to see if user is already logged in
+  // render login if not
+  // if (req.session.user) {
+  // } else {
+      res.render('index');
+
+  // }
+  // render index if they are logged in
+});
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup', function(req, res) {
+  // debugger;
+  //invoke users collection .add method, passing in new user model
+
+  new User(req.body).fetch().then(function(found) {
+    if (found) {
+      res.send('Username taken');
+    } else {
+      Users.create(req.body).then(function(newUser) {
+        // debugger;
+        res.send(201, newUser);
+      });
+    }
+  });
+  
 });
 
 app.get('/create', 
@@ -75,7 +106,11 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.post('/login', function(req, res) {
+  sess = req.body.username;
 
+
+});
 
 
 /************************************************************/
