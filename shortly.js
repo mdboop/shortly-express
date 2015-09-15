@@ -31,11 +31,10 @@ app.get('/',
 function(req, res) {
   // use conditional to see if user is already logged in
   // render login if not
-  // if (req.session.user) {
-  // } else {
-      res.render('index');
-
-  // }
+  if (req.session.user) {
+  } else {
+      res.redirect('/login');
+  }
   // render index if they are logged in
 });
 
@@ -58,7 +57,7 @@ app.post('/signup', function(req, res) {
         password: password
       }).then(function(newUser) {
         // debugger;
-        res.send(201, newUser);
+        res.redirect('/').send(201, 'Signed up!');
       });
     }
   });
