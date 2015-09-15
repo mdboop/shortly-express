@@ -134,9 +134,9 @@ app.post('/login', function(req, res) {
         res.redirect('/login');
       }
     } else {
-      res.send(404, 'No such user.');
+      res.redirect('/login');
     }
-  })
+  });
 
 });
 
