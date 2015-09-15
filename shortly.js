@@ -4,7 +4,7 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
-
+var helpers = require('./helpers/isUser');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -23,19 +23,18 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
-app.use(session({ secret: 'littleWhiteLie'}));
+app.use(session({ secret: 'pair program spooning'}));
 
-var sess;
 
 app.get('/', 
 function(req, res) {
   // use conditional to see if user is already logged in
   // render login if not
-  if (req.session.user) {
-  } else {
-      res.redirect('/login');
+  debugger;
+  if(helpers.isUser(req, res)) {
+    res.render('index');
   }
-  // render index if they are logged in
+
 });
 
 app.get('/signup', function(req, res) {
@@ -57,7 +56,7 @@ app.post('/signup', function(req, res) {
         password: password
       }).then(function(newUser) {
         // debugger;
-        res.redirect('/').send(201, 'Signed up!');
+        res.redirect('/');
       });
     }
   });
@@ -66,46 +65,52 @@ app.post('/signup', function(req, res) {
 
 app.get('/create', 
 function(req, res) {
-  res.render('index');
+  if(helpers.isUser(req, res)) {
+    res.render('create');
+  }
 });
 
 app.get('/links', 
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  });
+  if(helpers.isUser(req, res)) {
+    Links.reset().fetch().then(function(links) {
+      res.send(200, links.models);
+    });
+  }
 });
 
 app.post('/links', 
 function(req, res) {
-  var uri = req.body.url;
+  if(helpers.isUser(req, res)) {
+    var uri = req.body.url;
 
-  if (!util.isValidUrl(uri)) {
-    console.log('Not a valid url: ', uri);
-    return res.send(404);
-  }
-
-  new Link({ url: uri }).fetch().then(function(found) {
-    if (found) {
-      res.send(200, found.attributes);
-    } else {
-      util.getUrlTitle(uri, function(err, title) {
-        if (err) {
-          console.log('Error reading URL heading: ', err);
-          return res.send(404);
-        }
-
-        Links.create({
-          url: uri,
-          title: title,
-          base_url: req.headers.origin
-        })
-        .then(function(newLink) {
-          res.send(200, newLink);
-        });
-      });
+    if (!util.isValidUrl(uri)) {
+      console.log('Not a valid url: ', uri);
+      return res.send(404);
     }
-  });
+
+    new Link({ url: uri }).fetch().then(function(found) {
+      if (found) {
+        res.send(200, found.attributes);
+      } else {
+        util.getUrlTitle(uri, function(err, title) {
+          if (err) {
+            console.log('Error reading URL heading: ', err);
+            return res.send(404);
+          }
+
+          Links.create({
+            url: uri,
+            title: title,
+            base_url: req.headers.origin
+          })
+          .then(function(newLink) {
+            res.send(200, newLink);
+          });
+        });
+      }
+    });
+  }
 });
 
 /************************************************************/
@@ -116,20 +121,33 @@ app.get('/login', function(req, res) {
 })
 
 app.post('/login', function(req, res) {
-  // sess = req.body.username;
+  var sessionID = { username: req.body.username };
   new User({ username: req.body.username}).fetch().then(function(user) {
     if(user) {
       var match = bcrypt.compareSync(req.body.password, user.get('password'));
       if(match) {
-        res.redirect('/index').send(200, res.body);
+        // debugger;
+        req.session.user = req.body.username;
+
+        res.redirect('/');
       } else {
-        res.redirect('/login').send(400, 'Wrong password.');
+        res.redirect('/login');
       }
     } else {
       res.send(404, 'No such user.');
     }
   })
 
+});
+
+app.get('/logout', function(req, res) {
+  req.session.destroy(function(err) {
+    if (err) {
+      console.log(err, 'Could not destroy session');
+
+    }
+  });
+  res.redirect('/login');
 });
 
 

@@ -59,31 +59,31 @@ describe('', function() {
       });
   });
 
-  describe('Link creation:', function(){
+  xdescribe('Link creation:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
-var xbeforeEach = function(){
-      // create a user that we can then log-in with
-      new User({
-          'username': 'Phillip',
-          'password': 'Phillip'
-      }).save().then(function(){
-        var options = {
-          'method': 'POST',
-          'followAllRedirects': true,
-          'uri': 'http://127.0.0.1:4568/login',
-          'json': {
-            'username': 'Phillip',
-            'password': 'Phillip'
-          }
-        };
-        // login via form and save session info
-        requestWithSession(options, function(error, res, body) {
-          done();
-        });
-      });
-};
+    var beforeEach = function(done){
+          // create a user that we can then log-in with
+          new User({
+              'username': 'Phillip',
+              'password': 'Phillip'
+          }).save().then(function(){
+            var options = {
+              'method': 'POST',
+              'followAllRedirects': true,
+              'uri': 'http://127.0.0.1:4568/login',
+              'json': {
+                'username': 'Phillip',
+                'password': 'Phillip'
+              }
+            };
+            // login via form and save session info
+            requestWithSession(options, function(error, res, body) {
+              done();
+            });
+          });
+    };
 
     it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       var options = {
@@ -101,7 +101,7 @@ var xbeforeEach = function(){
       });
     });
 
-    describe('Shortening links:', function(){
+    xdescribe('Shortening links:', function(){
 
       var options = {
         'method': 'POST',
@@ -150,7 +150,7 @@ var xbeforeEach = function(){
 
     }); // 'Shortening links'
 
-    describe('With previously saved urls:', function(){
+    xdescribe('With previously saved urls:', function(){
 
       var link;
 
