@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -45,12 +46,17 @@ app.get('/signup', function(req, res) {
 app.post('/signup', function(req, res) {
   // debugger;
   //invoke users collection .add method, passing in new user model
+  var username = req.body.username;
+  var password = req.body.password;
 
-  new User(req.body).fetch().then(function(found) {
+  new User({username: username}).fetch().then(function(found) {
     if (found) {
       res.send('Username taken');
     } else {
-      Users.create(req.body).then(function(newUser) {
+      Users.create({
+        username: username,
+        password: password
+      }).then(function(newUser) {
         // debugger;
         res.send(201, newUser);
       });
@@ -106,9 +112,24 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-app.post('/login', function(req, res) {
-  sess = req.body.username;
+app.get('/login', function(req, res) {
+  res.render('login');
+})
 
+app.post('/login', function(req, res) {
+  // sess = req.body.username;
+  new User({ username: req.body.username}).fetch().then(function(user) {
+    if(user) {
+      var match = bcrypt.compareSync(req.body.password, user.get('password'));
+      if(match) {
+        res.redirect('/index').send(200, res.body);
+      } else {
+        res.redirect('/login').send(400, 'Wrong password.');
+      }
+    } else {
+      res.send(404, 'No such user.');
+    }
+  })
 
 });
 

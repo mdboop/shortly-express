@@ -11,22 +11,12 @@ var User = db.Model.extend({
   },
 
   initialize: function() {
-      // debugger;
-      // var user = this;
-      // var username = this.get('username');
-      // var password = this.get('password');
     this.on('creating', function(model, attrs, options) {
-      // debugger;
-      bcrypt.genSalt(10, function(err, salt) {
-        // debugger;
-        bcrypt.hash(model.get('password'), salt, null, function(err, hash) {
-          model.set('password', hash);
-          model.set('salt', salt);
-        });
-      });
-      
+      var salt = bcrypt.genSaltSync(10);
+      var hash = bcrypt.hashSync(model.get('password'), salt);
+      model.set('password', hash);
+      model.set('salt', salt);
     });
-
   }
 
 });
