@@ -13,29 +13,8 @@ var Link = require('../app/models/link');
 // Remove the 'x' from beforeEach block when working on
 // authentication tests.
 /************************************************************/
-var xbeforeEach = function(){};
+
 /************************************************************/
-  var beforeEach = function(done){
-        // create a user that we can then log-in with
-        new User({
-            'username': 'Phillip',
-            'password': 'Phillip'
-        }).save().then(function(){
-          var options = {
-            'method': 'POST',
-            'followAllRedirects': true,
-            'uri': 'http://127.0.0.1:4568/login',
-            'json': {
-              'username': 'Phillip',
-              'password': 'Phillip'
-            }
-          };
-          // login via form and save session info
-          requestWithSession(options, function(error, res, body) {
-            done();
-          });
-        });
-  };
 
 
 describe('', function() {
@@ -84,6 +63,27 @@ describe('', function() {
 
     var requestWithSession = request.defaults({jar: true});
 
+    beforeEach(function(done){
+      // create a user that we can then log-in with
+      new User({
+          'username': 'Phillip',
+          'password': 'Phillip'
+      }).save().then(function(){
+        var options = {
+          'method': 'POST',
+          'followAllRedirects': true,
+          'uri': 'http://127.0.0.1:4568/login',
+          'json': {
+            'username': 'Phillip',
+            'password': 'Phillip'
+          }
+        };
+        // login via form and save session info
+        requestWithSession(options, function(error, res, body) {
+          done();
+        });
+      });
+    });
 
     it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       var options = {
@@ -96,7 +96,7 @@ describe('', function() {
 
       requestWithSession(options, function(error, res, body) {
         // res comes from the request module, and may not follow express conventions
-        expect(res.statusCode).to.equal(302); // originally equaled 404
+        expect(res.statusCode).to.equal(404);
         done();
       });
     });
@@ -114,6 +114,7 @@ describe('', function() {
 
       it('Responds with the short code', function(done) {
         requestWithSession(options, function(error, res, body) {
+
           expect(res.body.url).to.equal('http://roflzoo.com/');
           expect(res.body.code).to.not.be.null;
           done();
@@ -190,6 +191,7 @@ describe('', function() {
         };
 
         requestWithSession(options, function(error, res, body) {
+
           var currentLocation = res.request.href;
           expect(currentLocation).to.equal('http://roflzoo.com/');
           done();

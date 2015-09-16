@@ -30,7 +30,6 @@ app.get('/',
 function(req, res) {
   // use conditional to see if user is already logged in
   // render login if not
-  debugger;
   if(helpers.isUser(req, res)) {
     res.render('index');
   }
@@ -42,7 +41,6 @@ app.get('/signup', function(req, res) {
 });
 
 app.post('/signup', function(req, res) {
-  // debugger;
   //invoke users collection .add method, passing in new user model
   var username = req.body.username;
   var password = req.body.password;
@@ -55,7 +53,6 @@ app.post('/signup', function(req, res) {
         username: username,
         password: password
       }).then(function(newUser) {
-        // debugger;
         res.redirect('/');
       });
     }
@@ -126,7 +123,6 @@ app.post('/login', function(req, res) {
     if(user) {
       var match = bcrypt.compareSync(req.body.password, user.get('password'));
       if(match) {
-        // debugger;
         req.session.user = req.body.username;
 
         res.redirect('/');
